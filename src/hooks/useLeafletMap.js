@@ -4,10 +4,9 @@ import 'leaflet/dist/leaflet.css'
 
 // Initializes a Leaflet map once, cleans up with map.remove(), and
 // exposes invalidateSize() for containers that mount inside modals.
-export default function useLeafletMap({ center = [7.0722, 125.6131], zoom = 13, invalidateOnMount = false }) {
+export default function useLeafletMap({ center = [37.7749, -122.4194], zoom = 13, invalidateOnMount = false }) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
-  const callbacksRef = useRef({})
 
   useEffect(() => {
     if (mapRef.current || !containerRef.current) return
@@ -16,7 +15,6 @@ export default function useLeafletMap({ center = [7.0722, 125.6131], zoom = 13, 
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map)
     mapRef.current = map
-    callbacksRef.current.onReady?.(map)
 
     let timer = null
     if (invalidateOnMount) {
@@ -41,5 +39,5 @@ export default function useLeafletMap({ center = [7.0722, 125.6131], zoom = 13, 
     }
   }
 
-  return { containerRef, mapRef, invalidateSize, callbacksRef }
+  return { containerRef, mapRef, invalidateSize }
 }

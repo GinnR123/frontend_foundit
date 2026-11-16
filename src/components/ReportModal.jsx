@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
-import { Crosshair, MapPin, Sparkles } from 'lucide-react'
+import { Crosshair, LocateFixed, MapPin, Sparkles } from 'lucide-react'
 import Modal from './Modal'
-import { analyzeReportText, createItem } from '../services/api'
+import { analyzeReportText, createItem, geocodeLocation } from '../services/api'
 import useLeafletMap from '../hooks/useLeafletMap'
 
 const CATEGORIES = ['Wallet / Bag', 'ID / Document', 'Gadget', 'Keys', 'Pet', 'Other']
@@ -26,7 +26,8 @@ export default function ReportModal({ onClose, onCreated }) {
   const [aiLoading, setAiLoading] = useState(false)
   const [aiApplied, setAiApplied] = useState(false)
   const [aiError, setAiError] = useState(null)
-  const { containerRef, mapRef, callbacksRef } = useLeafletMap({ invalidateOnMount: true })
+  const [geoLookup, setGeoLookup] = useState(null) // null | 'looking' | result/fallback message
+  const { containerRef, mapRef } = useLeafletMap({ invalidateOnMount: true })
   const pickerMarkerRef = useRef(null)
 
   function set(field, value) {
@@ -56,13 +57,7 @@ export default function ReportModal({ onClose, onCreated }) {
   }
 
   // Let the user click the map to drop or move a pin.
-  useEffect(() => {
-    callbacksRef.current.onReady = (map) => {
-      map.on('click', (e) => setPin(e.latlng.lat, e.latlng.lng))
-    }
-  }, [callbacksRef])
-
-  function setPin(lat, lng) {
+  const setPin = useCallback((lat, lng) => {
     const map = mapRef.current
     if (!map) return
     if (pickerMarkerRef.current) {
@@ -77,7 +72,15 @@ export default function ReportModal({ onClose, onCreated }) {
       }).addTo(map)
     }
     setForm((f) => ({ ...f, latitude: lat, longitude: lng }))
-  }
+  }, [mapRef])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    const handleMapClick = (e) => setPin(e.latlng.lat, e.latlng.lng)
+    map.on('click', handleMapClick)
+    return () => map.off('click', handleMapClick)
+  }, [mapRef, setPin])
 
   function clearPin() {
     if (pickerMarkerRef.current) {
@@ -85,6 +88,25 @@ export default function ReportModal({ onClose, onCreated }) {
       pickerMarkerRef.current = null
     }
     setForm((f) => ({ ...f, latitude: undefined, longitude: undefined }))
+  }
+
+  async function handleFindOnMap() {
+    const query = form.location_name.trim()
+    if (!query || geoLookup === 'looking') return
+    setGeoLookup('looking')
+    try {
+      const result = await geocodeLocation(query)
+      if (result) {
+        setPin(result.latitude, result.longitude)
+        const map = mapRef.current
+        if (map) map.setView([result.latitude, result.longitude], 15)
+        setGeoLookup(null)
+      } else {
+        setGeoLookup('No map match found — you can click the map to pin it manually.')
+      }
+    } catch {
+      setGeoLookup('Could not look up that location — you can click the map to pin it manually.')
+    }
   }
 
   function handleUseCurrentLocation() {
@@ -214,7 +236,7 @@ export default function ReportModal({ onClose, onCreated }) {
           <input
             id="r-title" type="text" value={form.title}
             onChange={(e) => set('title', e.target.value)}
-            placeholder="e.g. Black wallet near Roxas Avenue"
+            placeholder="e.g. Black leather wallet near Central Library"
             aria-invalid={!!errors.title}
             className={`mt-1 ${inputCls} ${errors.title ? 'border-lost' : ''}`}
           />
@@ -223,13 +245,31 @@ export default function ReportModal({ onClose, onCreated }) {
 
         <div className="mt-3">
           <label htmlFor="r-location" className={labelCls}>Location or landmark</label>
-          <input
-            id="r-location" type="text" value={form.location_name}
-            onChange={(e) => set('location_name', e.target.value)}
-            placeholder={'e.g. People’s Park main gate, Davao City'}
-            aria-invalid={!!errors.location_name}
-            className={`mt-1 ${inputCls} ${errors.location_name ? 'border-lost' : ''}`}
-          />
+          <div className="mt-1 flex gap-2">
+            <input
+              id="r-location" type="text" value={form.location_name}
+              onChange={(e) => set('location_name', e.target.value)}
+              placeholder="e.g. Main Metro Station, North Gate"
+              aria-invalid={!!errors.location_name}
+              className={inputCls}
+            />
+            <button
+              type="button"
+              onClick={handleFindOnMap}
+              disabled={!form.location_name.trim() || geoLookup === 'looking'}
+              title="Search the location on the map"
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md border border-line bg-surface px-2.5 text-[12px] text-ink hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ink disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <LocateFixed size={13} aria-hidden="true" />
+              {geoLookup === 'looking' ? 'Searching…' : 'Find on map'}
+            </button>
+          </div>
+          <p className="mt-1 text-[11px] text-ink-soft">
+            "Find on map" sends the typed location text to OpenStreetMap Nominatim.
+          </p>
+          {geoLookup && geoLookup !== 'looking' && (
+            <p className="mt-1 text-[12px] text-lost" role="alert">{geoLookup}</p>
+          )}
           {errors.location_name && <p className="mt-1 text-[12px] text-lost" role="alert">{errors.location_name}</p>}
         </div>
 
@@ -238,7 +278,7 @@ export default function ReportModal({ onClose, onCreated }) {
           <input
             id="r-contact" type="text" value={form.contact_info}
             onChange={(e) => set('contact_info', e.target.value)}
-            placeholder="e.g. you@example.com / 0917-000-0000"
+            placeholder="e.g. you@example.com / 555-010-0000"
             aria-invalid={!!errors.contact_info}
             className={`mt-1 ${inputCls} ${errors.contact_info ? 'border-lost' : ''}`}
           />

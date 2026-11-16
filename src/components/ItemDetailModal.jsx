@@ -7,8 +7,9 @@ import { StatusBadge } from './ItemCard'
 export default function ItemDetailModal({ item, session, onClose, onResolved, onSwitchItem }) {
   const [resolving, setResolving] = useState(false)
   const [error, setError] = useState(null)
-  const [matches, setMatches] = useState([])
-  const [matchesLoading, setMatchesLoading] = useState(false)
+  const [matchState, setMatchState] = useState({ itemId: null, matches: [] })
+  const matches = matchState.itemId === item.id ? matchState.matches : []
+  const matchesLoading = item.matched_item_id != null && matchState.itemId !== item.id
 
   const isOwner = session && session.id === item.user_id
   const isAdmin = session && session.role === 'admin'
@@ -28,21 +29,14 @@ export default function ItemDetailModal({ item, session, onClose, onResolved, on
   }
 
   useEffect(() => {
-    if (item.matched_item_id == null) {
-      setMatches([])
-      return
-    }
+    if (item.matched_item_id == null) return
     let cancelled = false
-    setMatchesLoading(true)
     getPossibleMatches(item.id)
       .then((result) => {
-        if (!cancelled) setMatches(result)
+        if (!cancelled) setMatchState({ itemId: item.id, matches: result })
       })
       .catch(() => {
-        if (!cancelled) setMatches([])
-      })
-      .finally(() => {
-        if (!cancelled) setMatchesLoading(false)
+        if (!cancelled) setMatchState({ itemId: item.id, matches: [] })
       })
     return () => {
       cancelled = true

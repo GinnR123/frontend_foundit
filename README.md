@@ -22,7 +22,7 @@ npm run build    # production build check
 src/
 ├── components/        # Navbar, FilterBar, ItemFeed, ItemCard, ItemDetailModal,
 │                      #   ItemMap, ReportModal, AuthModal, Modal
-├── data/              # mockItems.js — seeded Davao City reports
+├── data/              # mockItems.js — generic community demo reports
 ├── hooks/             # useLeafletMap.js — Leaflet init/cleanup
 └── services/          # api.js — single source for all data operations
 ```

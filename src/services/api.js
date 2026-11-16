@@ -124,14 +124,17 @@ function classifyCategory(text) {
   if (/\b(cat|pet|dog|animal)\b/.test(t)) return 'Pet'
   if (/\b(key|keys)\b/.test(t)) return 'Keys'
   if (/\b(gadget|phone|earbud|laptop|charger|headphone|watch|tablet)\b/.test(t)) return 'Gadget'
-  if (/\b(id|document|card|license|passport|wallet|bag|backpack|purse)\b/.test(t)) return 'Wallet / Bag'
-  if (/\b(id|document|license|passport|certificate)\b/.test(t)) return 'ID / Document'
+  if (/\b(wallet|bag|backpack|purse)\b/.test(t)) return 'Wallet / Bag'
+  if (/\b(id|document|card|license|passport|certificate)\b/.test(t)) return 'ID / Document'
   return 'Other'
 }
 
+// Demo keyword extractor: recognizes general community landmarks, not city-specific ones.
 function extractLocation(text) {
-  const m = text.match(/(?:at|near|in|around)\s+([A-Z][A-Za-z'&\s]+?)(?:[.,;]|$)/)
-  return m ? m[1].trim() : ''
+  const landmarkRe = /\b(library|station|park|campus|cafeteria|mall|gym|bus stop|bus terminal|student center|plaza|market|cafe|canteen)\b/i
+  const m = text.match(landmarkRe)
+  if (m) return m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase()
+  return ''
 }
 
 function suggestTitle(text, type) {
@@ -197,3 +200,40 @@ export function getSession() {
 export function logoutUser() {
   localStorage.removeItem(SESSION_KEY)
 }
+
+// --- Geocoding (OpenStreetMap Nominatim) ---
+// Swap this function's body to change providers; callers only see { latitude, longitude } | null.
+
+const GEOCODE_MIN_INTERVAL = 1000 // Nominatim usage policy: max 1 request/second
+const geocodeCache = new Map() // normalized query -> { latitude, longitude } | null (null = not found, cached too)
+let lastGeocodeAt = 0
+let geocodeInFlight = null
+
+async function geocodeLocation(query) {
+  const key = String(query || '').trim().toLowerCase()
+  if (!key) return null
+  if (geocodeCache.has(key)) return geocodeCache.get(key)
+  if (geocodeInFlight) return geocodeInFlight
+
+  const wait = Math.max(0, lastGeocodeAt + GEOCODE_MIN_INTERVAL - Date.now())
+  geocodeInFlight = (async () => {
+    try {
+      if (wait > 0) await delay(wait)
+      lastGeocodeAt = Date.now()
+      // TODO: replace with a backend proxy route so API keys/proxying live server-side.
+      const url = `https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(key)}`
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`Geocoding failed (${res.status})`)
+      const data = await res.json()
+      const hit = Array.isArray(data) && data.length > 0 ? data[0] : null
+      const result = hit ? { latitude: parseFloat(hit.lat), longitude: parseFloat(hit.lon) } : null
+      geocodeCache.set(key, result)
+      return result
+    } finally {
+      geocodeInFlight = null
+    }
+  })()
+  return geocodeInFlight
+}
+
+export { geocodeLocation }

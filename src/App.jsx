@@ -15,14 +15,13 @@ export default function App() {
   const [statusTab, setStatusTab] = useState('All')
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('All')
-  const [session, setSession] = useState(null)
+  const [session, setSession] = useState(getSession)
   const [selectedItemId, setSelectedItemId] = useState(null)
   const [focusItemId, setFocusItemId] = useState(null)
   const [openModal, setOpenModal] = useState(null) // 'auth' | 'report' | null
   const [loadError, setLoadError] = useState(null)
 
   useEffect(() => {
-    setSession(getSession())
     getItems()
       .then(setItems)
       .catch(() => setLoadError('Could not load reports. Refresh the page to try again.'))

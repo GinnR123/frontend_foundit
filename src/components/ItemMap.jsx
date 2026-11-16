@@ -35,12 +35,15 @@ export default function ItemMap({ items, focusItemId, onFocusHandled, onSelectIt
   const { containerRef, mapRef, invalidateSize } = useLeafletMap({})
   const markersRef = useRef(new Map())
   const onSelectRef = useRef(onSelectItem)
-  onSelectRef.current = onSelectItem
+  useEffect(() => {
+    onSelectRef.current = onSelectItem
+  }, [onSelectItem])
 
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
     const layer = L.layerGroup().addTo(map)
+    const markers = markersRef.current
     const withCoords = items.filter(
       (it) => it.latitude != null && it.longitude != null
     )
@@ -54,11 +57,18 @@ export default function ItemMap({ items, focusItemId, onFocusHandled, onSelectIt
       })
       marker.bindPopup(buildPopup(item, (id) => onSelectRef.current?.(id)))
       marker.addTo(layer)
-      markersRef.current.set(item.id, marker)
+      markers.set(item.id, marker)
+    }
+    // Frame pins from any city cleanly; focus flyTo below still wins after this.
+    if (withCoords.length > 0) {
+      map.fitBounds(
+        L.latLngBounds(withCoords.map((it) => [it.latitude, it.longitude])),
+        { padding: [24, 24], maxZoom: 15 }
+      )
     }
     return () => {
       layer.remove()
-      markersRef.current.clear()
+      markers.clear()
     }
   }, [items, mapRef])
 

@@ -6,7 +6,7 @@ export default function Navbar({ session, onOpenAuth, onOpenReport, onLogout }) 
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
         <div className="flex items-center gap-2">
           <span className="text-[17px] font-semibold tracking-tight text-ink">FoundIt</span>
-          <span className="hidden text-xs text-ink-soft sm:inline">Davao City Lost &amp; Found</span>
+          <span className="hidden text-xs text-ink-soft sm:inline">Community Lost &amp; Found</span>
         </div>
 
         <div className="ml-auto flex items-center gap-2">

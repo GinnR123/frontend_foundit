@@ -126,7 +126,7 @@ export default function AuthModal({ onClose, onAuthChange }) {
             <button
               type="button"
               disabled={busy}
-              onClick={() => run(() => loginUser('demo@foundit.ph'))}
+              onClick={() => run(() => loginUser('demo@foundit.app'))}
               className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-line bg-surface px-3 text-sm text-ink hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:opacity-60"
             >
               <User size={14} aria-hidden="true" />
@@ -135,7 +135,7 @@ export default function AuthModal({ onClose, onAuthChange }) {
             <button
               type="button"
               disabled={busy}
-              onClick={() => run(() => loginUser('admin@foundit.ph'))}
+              onClick={() => run(() => loginUser('admin@foundit.app'))}
               className="inline-flex h-9 items-center justify-center gap-1.5 rounded-md border border-line bg-surface px-3 text-sm text-ink hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:opacity-60"
             >
               <ShieldCheck size={14} aria-hidden="true" />
