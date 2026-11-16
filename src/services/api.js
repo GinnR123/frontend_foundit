@@ -28,7 +28,22 @@ function writeJSON(key, value) {
 
 // Seed starter data once; keeps mock initialization separate from normal updates.
 function seed() {
-  if (!localStorage.getItem(ITEMS_KEY)) writeJSON(ITEMS_KEY, MOCK_ITEMS)
+  if (!localStorage.getItem(ITEMS_KEY)) {
+    writeJSON(ITEMS_KEY, MOCK_ITEMS)
+  } else {
+    // Refresh the built-in demo reports while preserving user-created reports
+    // and any demo resolution state from an earlier session.
+    const items = readJSON(ITEMS_KEY, MOCK_ITEMS)
+    const seedsById = new Map(MOCK_ITEMS.map((item) => [item.id, item]))
+    let changed = false
+    const refreshed = items.map((item) => {
+      const seedItem = seedsById.get(item.id)
+      if (!seedItem) return item
+      changed = true
+      return { ...seedItem, status: item.status, matched_item_id: item.matched_item_id }
+    })
+    if (changed) writeJSON(ITEMS_KEY, refreshed)
+  }
   if (!localStorage.getItem(USERS_KEY)) writeJSON(USERS_KEY, MOCK_USERS)
 }
 

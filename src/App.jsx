@@ -91,6 +91,10 @@ export default function App() {
       />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-4">
+        <div className="mb-5 border-b border-line-strong pb-3">
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-soft">Community notices</p>
+          <h1 className="mt-1 text-2xl font-semibold leading-tight text-ink sm:text-[30px]">Lost &amp; Found</h1>
+        </div>
         {loadError && (
           <p className="mb-3 rounded-md border border-lost bg-lost-bg px-3 py-2 text-[13px] text-lost" role="alert">
             {loadError}
@@ -115,7 +119,7 @@ export default function App() {
                   onClick={() => setStatusTab(tab)}
                   className={`-mb-px h-8 border-b-2 px-3 text-[13px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
                     statusTab === tab
-                      ? 'border-ink text-ink'
+                      ? 'border-accent text-ink'
                       : 'border-transparent text-ink-soft hover:text-ink'
                   }`}
                 >

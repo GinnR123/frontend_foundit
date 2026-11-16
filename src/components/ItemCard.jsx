@@ -21,7 +21,7 @@ export default function ItemCard({ item, onClick }) {
     <button
       type="button"
       onClick={() => onClick(item)}
-      className={`block w-full border-b border-line bg-surface px-4 py-3 text-left last:border-b-0 hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ink ${
+      className={`block w-full border-b border-line bg-surface px-4 py-3 text-left last:border-b-0 hover:bg-paper focus-visible:outline focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-accent ${
         muted ? 'opacity-60' : ''
       }`}
     >
@@ -39,10 +39,10 @@ export default function ItemCard({ item, onClick }) {
           {new Date(item.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
         </span>
       </div>
-      <h3 className={`mt-1 text-[15px] font-medium leading-snug ${muted ? 'text-ink-soft line-through decoration-line-strong' : 'text-ink'}`}>
+      <h3 className={`mt-2 text-base font-medium leading-snug ${muted ? 'text-ink-soft line-through decoration-line-strong' : 'text-ink'}`}>
         {item.title}
       </h3>
-      <p className="mt-0.5 line-clamp-1 text-[13px] text-ink-soft">{item.description}</p>
+      <p className="mt-1 line-clamp-1 text-sm text-ink-soft">{item.description}</p>
       <div className="mt-1 flex items-center gap-1 text-[12px] text-ink-soft">
         <MapPin size={12} aria-hidden="true" />
         <span className="truncate">{item.location_name || 'No location given'}</span>

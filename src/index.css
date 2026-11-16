@@ -1,19 +1,23 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #1a1918;
-  --color-ink-soft: #6b6860;
-  --color-paper: #f4f3ed;
+  --color-ink: #0a0a0a;
+  --color-ink-soft: #525252;
+  --color-paper: #fafafa;
   --color-surface: #ffffff;
-  --color-line: #e4e2da;
-  --color-line-strong: #c9c6bc;
+  --color-line: #e5e5e5;
+  --color-line-strong: #d4d4d4;
   --color-lost: #b45309;
   --color-lost-bg: #fef3c7;
   --color-found: #15803d;
   --color-found-bg: #dcece7;
   --color-resolved: #6b6860;
   --color-resolved-bg: #ececec;
-  --color-accent: #1a1918;
+  --color-accent: #ef4444;
+  --font-heading: 'Work Sans', system-ui, -apple-system, 'Segoe UI', Helvetica, sans-serif;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
 }
 
 @layer base {
@@ -21,10 +25,14 @@
     margin: 0;
     background: var(--color-paper);
     color: var(--color-ink);
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    font-size: 15px;
-    line-height: 1.5;
+    font-family: 'Work Sans', system-ui, -apple-system, 'Segoe UI', Helvetica, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 {
+    font-family: 'Work Sans', system-ui, -apple-system, 'Segoe UI', Helvetica, sans-serif;
+    letter-spacing: -0.02em;
   }
   button {
     font-family: inherit;

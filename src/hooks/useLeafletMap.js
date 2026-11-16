@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css'
 
 // Initializes a Leaflet map once, cleans up with map.remove(), and
 // exposes invalidateSize() for containers that mount inside modals.
-export default function useLeafletMap({ center = [37.7749, -122.4194], zoom = 13, invalidateOnMount = false }) {
+export default function useLeafletMap({ center = [20, 0], zoom = 2, invalidateOnMount = false }) {
   const containerRef = useRef(null)
   const mapRef = useRef(null)
 
