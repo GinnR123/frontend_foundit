@@ -38,9 +38,9 @@ export default function Modal({ title, onClose, children, wide = false }) {
         aria-modal="true"
         aria-label={title}
         tabIndex={-1}
-        className={`w-full ${wide ? 'max-w-2xl' : 'max-w-md'} rounded-lg border border-line bg-surface shadow-sm outline-none`}
+        className={`flex max-h-[90vh] w-full flex-col overflow-hidden ${wide ? 'max-w-2xl' : 'max-w-md'} rounded-lg border border-line bg-surface shadow-sm outline-none`}
       >
-        <div className="flex items-center justify-between border-b border-line px-5 py-3">
+        <div className="flex shrink-0 items-center justify-between border-b border-line px-5 py-3">
           <h2 className="text-[15px] font-semibold text-ink">{title}</h2>
           <button
             type="button"

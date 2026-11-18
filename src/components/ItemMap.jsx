@@ -11,21 +11,21 @@ function buildPopup(item, onSelect) {
   badge.textContent = item.status === 'RESOLVED' ? 'RESOLVED' : item.type
   badge.style.cssText = `font-size:10px;font-weight:600;padding:1px 6px;border-radius:4px;${
     item.status === 'RESOLVED'
-      ? 'background:#ececec;color:#6b6860'
+      ? 'background:#292929;color:#a1a1a6'
       : item.type === 'LOST'
-        ? 'background:#FEF3C7;color:#B45309'
-        : 'background:#DCFCE7;color:#15803D'
+        ? 'background:#3a2d1b;color:#e8bd76'
+        : 'background:#1d3325;color:#91d2a5'
   }`
   const title = document.createElement('div')
   title.textContent = item.title
   title.style.cssText = 'margin-top:4px;font-weight:600;font-size:13px;line-height:1.3'
   const loc = document.createElement('div')
   loc.textContent = item.location_name || ''
-  loc.style.cssText = 'margin-top:2px;font-size:11px;color:#6b6860'
+  loc.style.cssText = 'margin-top:2px;font-size:11px;color:#a1a1a6'
   const btn = document.createElement('button')
   btn.type = 'button'
   btn.textContent = 'View details'
-  btn.style.cssText = 'margin-top:6px;font-size:11px;text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;color:#1a1918'
+  btn.style.cssText = 'margin-top:6px;font-size:11px;text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;color:#c9b99a'
   btn.addEventListener('click', () => onSelect(item.id))
   el.append(badge, title, loc, btn)
   return el
@@ -50,9 +50,9 @@ export default function ItemMap({ items, focusItemId, onFocusHandled, onSelectIt
     for (const item of withCoords) {
       const marker = L.circleMarker([item.latitude, item.longitude], {
         radius: 7,
-        color: '#ffffff',
+        color: '#f5f5f7',
         weight: 1.5,
-        fillColor: COLOR[item.type] || '#6b6860',
+        fillColor: COLOR[item.type] || '#a1a1a6',
         fillOpacity: item.status === 'RESOLVED' ? 0.4 : 0.95,
       })
       marker.bindPopup(buildPopup(item, (id) => onSelectRef.current?.(id)))

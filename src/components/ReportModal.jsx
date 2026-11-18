@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import L from 'leaflet'
-import { Crosshair, LocateFixed, MapPin, Sparkles } from 'lucide-react'
+import { Crosshair, LocateFixed, MapPin } from 'lucide-react'
 import Modal from './Modal'
-import { analyzeReportText, createItem, geocodeLocation } from '../services/api'
+import { createItem, geocodeLocation } from '../services/api'
 import useLeafletMap from '../hooks/useLeafletMap'
 
 const CATEGORIES = ['Wallet / Bag', 'ID / Document', 'Gadget', 'Keys', 'Pet', 'Other']
@@ -23,9 +23,6 @@ export default function ReportModal({ onClose, onCreated }) {
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
   const [geoState, setGeoState] = useState(null) // null | 'locating' | error message
-  const [aiLoading, setAiLoading] = useState(false)
-  const [aiApplied, setAiApplied] = useState(false)
-  const [aiError, setAiError] = useState(null)
   const [geoLookup, setGeoLookup] = useState(null) // null | 'looking' | result/fallback message
   const { containerRef, mapRef } = useLeafletMap({ invalidateOnMount: true })
   const pickerMarkerRef = useRef(null)
@@ -33,27 +30,6 @@ export default function ReportModal({ onClose, onCreated }) {
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }))
     setErrors((e) => ({ ...e, [field]: undefined }))
-  }
-
-  async function handleAutoFill() {
-    if (form.description.trim().length < 10 || aiLoading) return
-    setAiLoading(true)
-    setAiError(null)
-    try {
-      const suggestion = await analyzeReportText(form.description, form.type)
-      setForm((f) => ({
-        ...f,
-        title: suggestion.suggested_title || f.title,
-        category: suggestion.suggested_category || f.category,
-        // Never overwrite text the user already typed.
-        location_name: f.location_name || suggestion.suggested_location || f.location_name,
-      }))
-      setAiApplied(true)
-    } catch (e) {
-      setAiError(e.message || 'Could not generate a suggestion. Try again.')
-    } finally {
-      setAiLoading(false)
-    }
   }
 
   // Let the user click the map to drop or move a pin.
@@ -186,7 +162,8 @@ export default function ReportModal({ onClose, onCreated }) {
 
   return (
     <Modal title="Report an Item" onClose={onClose} wide>
-      <form onSubmit={handleSubmit} noValidate className="px-5 py-4">
+      <form onSubmit={handleSubmit} noValidate className="flex min-h-0 flex-1 flex-col">
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 [scrollbar-width:thin]">
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="r-type" className={labelCls}>Report type</label>
@@ -213,22 +190,6 @@ export default function ReportModal({ onClose, onCreated }) {
             className={`mt-1 w-full rounded-md border bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-ink ${errors.description ? 'border-lost' : 'border-line'}`}
           />
           {errors.description && <p className="mt-1 text-[12px] text-lost" role="alert">{errors.description}</p>}
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={handleAutoFill}
-              disabled={form.description.trim().length < 10 || aiLoading}
-              title="Generate a title and category from your description (demo only)"
-              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line bg-surface px-2.5 text-[12px] text-ink hover:bg-paper focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ink disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              <Sparkles size={13} aria-hidden="true" />
-              {aiLoading ? 'Analyzing text…' : 'Auto-fill title & category'}
-            </button>
-            {aiApplied && !aiLoading && (
-              <span className="text-[12px] text-ink-soft">Suggestion applied — review fields before submitting.</span>
-            )}
-          </div>
-          {aiError && <p className="mt-1 text-[12px] text-lost" role="alert">{aiError}</p>}
         </div>
 
         <div className="mt-3">
@@ -323,8 +284,9 @@ export default function ReportModal({ onClose, onCreated }) {
             {errors.submit}
           </p>
         )}
+        </div>
 
-        <div className="mt-4 flex justify-end gap-2 border-t border-line pt-3">
+        <div className="mt-auto flex shrink-0 justify-end gap-2 border-t border-line bg-surface px-5 py-3">
           <button
             type="button"
             onClick={onClose}
@@ -335,7 +297,7 @@ export default function ReportModal({ onClose, onCreated }) {
           <button
             type="submit"
             disabled={submitting}
-            className="inline-flex h-9 items-center rounded-md bg-ink px-3 text-sm font-medium text-white hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-9 items-center rounded-md bg-accent px-3 text-sm font-medium text-black hover:bg-[#d6c9b2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? 'Submitting…' : 'Submit Report'}
           </button>

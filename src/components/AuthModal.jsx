@@ -65,7 +65,7 @@ export default function AuthModal({ onClose, onAuthChange }) {
             aria-selected={mode === 'login'}
             onClick={() => switchMode('login')}
             className={`h-7 flex-1 rounded text-[12px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ink ${
-              mode === 'login' ? 'bg-ink text-white' : 'text-ink-soft hover:bg-paper'
+              mode === 'login' ? 'bg-elevated text-ink' : 'text-ink-soft hover:bg-paper'
             }`}
           >
             Login
@@ -76,7 +76,7 @@ export default function AuthModal({ onClose, onAuthChange }) {
             aria-selected={mode === 'register'}
             onClick={() => switchMode('register')}
             className={`h-7 flex-1 rounded text-[12px] font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ink ${
-              mode === 'register' ? 'bg-ink text-white' : 'text-ink-soft hover:bg-paper'
+              mode === 'register' ? 'bg-elevated text-ink' : 'text-ink-soft hover:bg-paper'
             }`}
           >
             Register
@@ -114,7 +114,7 @@ export default function AuthModal({ onClose, onAuthChange }) {
           <button
             type="submit"
             disabled={busy}
-            className="inline-flex h-9 w-full items-center justify-center rounded-md bg-ink px-3 text-sm font-medium text-white hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex h-9 w-full items-center justify-center rounded-md bg-accent px-3 text-sm font-medium text-black hover:bg-[#d6c9b2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60"
           >
             {busy ? 'Working…' : mode === 'login' ? 'Log in' : 'Create demo account'}
           </button>

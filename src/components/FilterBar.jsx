@@ -23,7 +23,7 @@ export default function FilterBar({ query, onQueryChange, category, onCategoryCh
           onClick={() => onCategoryChange('All')}
           className={`h-7 rounded-md border px-2.5 text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ink ${
             category === 'All'
-              ? 'border-ink bg-ink text-white'
+              ? 'border-line-strong bg-elevated text-ink'
               : 'border-line bg-surface text-ink-soft hover:border-line-strong'
           }`}
         >
@@ -37,7 +37,7 @@ export default function FilterBar({ query, onQueryChange, category, onCategoryCh
             onClick={() => onCategoryChange(c)}
             className={`h-7 rounded-md border px-2.5 text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ink ${
               category === c
-                ? 'border-ink bg-ink text-white'
+                ? 'border-line-strong bg-elevated text-ink'
                 : 'border-line bg-surface text-ink-soft hover:border-line-strong'
             }`}
           >

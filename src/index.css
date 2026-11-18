@@ -1,29 +1,30 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #0a0a0a;
-  --color-ink-soft: #525252;
-  --color-paper: #fafafa;
-  --color-surface: #ffffff;
-  --color-line: #e5e5e5;
-  --color-line-strong: #d4d4d4;
-  --color-lost: #b45309;
-  --color-lost-bg: #fef3c7;
-  --color-found: #15803d;
-  --color-found-bg: #dcece7;
-  --color-resolved: #6b6860;
-  --color-resolved-bg: #ececec;
-  --color-accent: #ef4444;
+  --color-ink: #f5f5f7;
+  --color-ink-soft: #a1a1a6;
+  --color-paper: #111111;
+  --color-surface: #1c1c1e;
+  --color-elevated: #292929;
+  --color-line: #303030;
+  --color-line-strong: #48484a;
+  --color-lost: #e8bd76;
+  --color-lost-bg: #3a2d1b;
+  --color-found: #91d2a5;
+  --color-found-bg: #1d3325;
+  --color-resolved: #a1a1a6;
+  --color-resolved-bg: #292929;
+  --color-accent: #c9b99a;
   --font-heading: 'Work Sans', system-ui, -apple-system, 'Segoe UI', Helvetica, sans-serif;
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
 }
 
 @layer base {
   body {
     margin: 0;
-    background: var(--color-paper);
+    background: #000000;
     color: var(--color-ink);
     font-family: 'Work Sans', system-ui, -apple-system, 'Segoe UI', Helvetica, sans-serif;
     font-size: 16px;
@@ -38,4 +39,34 @@
     font-family: inherit;
     cursor: pointer;
   }
+}
+
+.leaflet-control-zoom a,
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #1c1c1e !important;
+  color: #f5f5f7 !important;
+  border-color: #303030 !important;
+}
+
+.leaflet-container {
+  background: #111111 !important;
+}
+
+.leaflet-control-zoom a {
+  border-bottom-color: #303030 !important;
+}
+
+.leaflet-bar {
+  border: 1px solid #48484a;
+  box-shadow: none;
+}
+
+.leaflet-control-attribution {
+  background: rgb(17 17 17 / 92%) !important;
+  color: #a1a1a6 !important;
+}
+
+.leaflet-control-attribution a {
+  color: #c9b99a !important;
 }

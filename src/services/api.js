@@ -133,47 +133,6 @@ function buildMatchReason(a, b) {
   return parts.length ? parts.join(' and ') : 'similar report details'
 }
 
-// Lightweight demo keyword parser. Real backend will use Gemini.
-function classifyCategory(text) {
-  const t = text.toLowerCase()
-  if (/\b(cat|pet|dog|animal)\b/.test(t)) return 'Pet'
-  if (/\b(key|keys)\b/.test(t)) return 'Keys'
-  if (/\b(gadget|phone|earbud|laptop|charger|headphone|watch|tablet)\b/.test(t)) return 'Gadget'
-  if (/\b(wallet|bag|backpack|purse)\b/.test(t)) return 'Wallet / Bag'
-  if (/\b(id|document|card|license|passport|certificate)\b/.test(t)) return 'ID / Document'
-  return 'Other'
-}
-
-// Demo keyword extractor: recognizes general community landmarks, not city-specific ones.
-function extractLocation(text) {
-  const landmarkRe = /\b(library|station|park|campus|cafeteria|mall|gym|bus stop|bus terminal|student center|plaza|market|cafe|canteen)\b/i
-  const m = text.match(landmarkRe)
-  if (m) return m[1].charAt(0).toUpperCase() + m[1].slice(1).toLowerCase()
-  return ''
-}
-
-function suggestTitle(text, type) {
-  const cleaned = text.replace(/[.,;!?]$/, '').trim()
-  const prefix = type === 'LOST' ? 'Lost' : 'Found'
-  const words = cleaned.split(/\s+/)
-  const short = words.slice(0, 6).join(' ')
-  return `${prefix}: ${short}`
-}
-
-export async function analyzeReportText(description, type) {
-  // TODO: replace with fetch('/api/ai/analyze', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description, type }) })
-  // Expected request:  { description: string, type: 'LOST' | 'FOUND' }
-  // Expected response: { suggested_title: string, suggested_category: string, suggested_location: string, is_demo: true }
-  await delay(500)
-  const text = String(description || '').trim()
-  return {
-    suggested_title: suggestTitle(text, type),
-    suggested_category: classifyCategory(text),
-    suggested_location: extractLocation(text),
-    is_demo: true,
-  }
-}
-
 export async function loginUser(email) {
   // Demo-only: email lookup, no password. TODO: replace with POST /api/auth/login
   seed()
@@ -210,6 +169,62 @@ export function getSession() {
   } catch {
     return null
   }
+}
+
+// --- Finder search (mock) ---
+// TODO: Member 3 — replace body with fetch('/api/ai/search', { method: 'POST', ... }).
+// Contract stays: searchFinder(query, dateRange) -> { item_ids: number[], summary: string }
+
+// Parses natural-language date phrases; returns [startMs, endMs] or null.
+// shortcut: handles today/yesterday/this week/past N days only, upgrade to a real date parser when the backend lands.
+const dayMs = 86400000
+function parseDatePhrase(text) {
+  const t = text.toLowerCase()
+  const now = new Date()
+  const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
+  if (/\btoday\b/.test(t)) return [startOfDay(now), Date.now()]
+  if (/\byesterday\b/.test(t)) return [startOfDay(now) - dayMs, startOfDay(now)]
+  if (/\bthis week\b/.test(t)) {
+    const monday = startOfDay(now) - ((now.getDay() + 6) % 7) * dayMs
+    return [monday, Date.now()]
+  }
+  const pastN = t.match(/\b(?:past|last)\s+(\d+)\s+days?\b/)
+  if (pastN) return [Date.now() - Number(pastN[1]) * dayMs, Date.now()]
+  return null
+}
+
+export async function searchFinder(query, dateRange = {}) {
+  seed()
+  await delay(300)
+  const open = readJSON(ITEMS_KEY, []).filter((it) => it.status === 'OPEN')
+  const range = parseDatePhrase(String(query || '')) ||
+    (dateRange.startDate || dateRange.endDate
+      ? [
+          dateRange.startDate ? new Date(dateRange.startDate).getTime() : 0,
+          dateRange.endDate ? new Date(dateRange.endDate).getTime() + dayMs - 1 : Infinity,
+        ]
+      : null)
+
+  let matches = open
+  if (range) matches = matches.filter((it) => {
+    const ts = new Date(it.created_at).getTime()
+    return ts >= range[0] && ts <= range[1]
+  })
+
+  // Keyword matching: skip filler words, match remaining tokens across text fields.
+  const STOP = new Set(['show', 'all', 'the', 'a', 'an', 'items', 'item', 'unclaimed', 'from', 'to', 'this', 'past', 'last', 'days', 'day', 'week', 'today', 'yesterday', 'in', 'of', 'and', 'or', 'lost', 'found'])
+  const words = String(query || '').toLowerCase().split(/[^a-z0-9]+/).filter((w) => w.length > 2 && !STOP.has(w))
+  if (words.length > 0) {
+    matches = matches.filter((it) => {
+      const hay = `${it.title} ${it.description} ${it.category} ${it.location_name} ${it.type}`.toLowerCase()
+      return words.some((w) => hay.includes(w))
+    })
+  }
+
+  const summary = range
+    ? `Showing ${matches.length} unclaimed item${matches.length === 1 ? '' : 's'}${words.length ? ' matching your keywords' : ''} within the selected date range.`
+    : `Showing ${matches.length} unclaimed item${matches.length === 1 ? '' : 's'} matching your query.`
+  return { item_ids: matches.map((it) => it.id), summary }
 }
 
 export function logoutUser() {

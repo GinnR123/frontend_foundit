@@ -15,13 +15,16 @@ export function StatusBadge({ type, status }) {
   )
 }
 
-export default function ItemCard({ item, onClick }) {
+export default function ItemCard({ item, onClick, variant = 'row' }) {
   const muted = item.status === 'RESOLVED'
+  const cardStyle = variant === 'card'
+    ? 'border border-line hover:border-ink'
+    : 'border-b border-line last:border-b-0'
   return (
     <button
       type="button"
       onClick={() => onClick(item)}
-      className={`block w-full border-b border-line bg-surface px-4 py-3 text-left last:border-b-0 hover:bg-paper focus-visible:outline focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-accent ${
+      className={`block w-full ${cardStyle} bg-surface px-4 py-3 text-left hover:bg-paper focus-visible:outline focus-visible:outline-1 focus-visible:-outline-offset-1 focus-visible:outline-accent ${
         muted ? 'opacity-60' : ''
       }`}
     >
@@ -35,7 +38,7 @@ export default function ItemCard({ item, onClick }) {
             Possible Match #{item.matched_item_id}
           </span>
         )}
-        <span className="ml-auto shrink-0 text-[11px] text-ink-soft">
+        <span className="ml-auto shrink-0 font-mono text-[11px] text-ink-soft">
           {new Date(item.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
         </span>
       </div>

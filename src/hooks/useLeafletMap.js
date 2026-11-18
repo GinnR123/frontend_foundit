@@ -11,9 +11,10 @@ export default function useLeafletMap({ center = [20, 0], zoom = 2, invalidateOn
   useEffect(() => {
     if (mapRef.current || !containerRef.current) return
     const map = L.map(containerRef.current, { center, zoom, scrollWheelZoom: true })
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map)
+    tiles.getContainer().style.filter = 'grayscale(100%) invert(85%) hue-rotate(180deg) brightness(85%) contrast(90%)'
     mapRef.current = map
 
     let timer = null

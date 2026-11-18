@@ -1,13 +1,44 @@
 import { LogIn, LogOut, Plus, ShieldCheck } from 'lucide-react'
 
-export default function Navbar({ session, onOpenAuth, onOpenReport, onLogout }) {
+export default function Navbar({ session, view, onNavigate, onOpenAuth, onOpenReport, onOpenGuide, onLogout }) {
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-surface">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4">
         <div className="flex items-center gap-2">
-          <span className="font-heading text-[17px] font-semibold tracking-tight text-ink">FoundIt</span>
-          <span className="hidden text-xs text-ink-soft sm:inline">Community Lost &amp; Found</span>
+          <span className="font-heading text-lg font-semibold tracking-tight text-ink">FoundIt</span>
+          <span className="hidden text-[13px] text-ink-soft sm:inline">Community Lost &amp; Found</span>
         </div>
+
+        <nav className="ml-4 flex gap-1" aria-label="Main">
+          <button
+            type="button"
+            onClick={() => onNavigate('feed')}
+            aria-current={view === 'feed' ? 'page' : undefined}
+            className={`-mb-px h-14 border-b-2 px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
+              view === 'feed' ? 'border-accent text-ink' : 'border-transparent text-ink-soft hover:text-ink'
+            }`}
+          >
+            Lost &amp; Found
+          </button>
+          <button
+            type="button"
+            onClick={() => onNavigate('finder')}
+            aria-current={view === 'finder' ? 'page' : undefined}
+            className={`-mb-px h-14 border-b-2 px-3 text-sm font-medium focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
+              view === 'finder' ? 'border-accent text-ink' : 'border-transparent text-ink-soft hover:text-ink'
+            }`}
+          >
+            Finder
+          </button>
+        </nav>
+
+        <button
+          type="button"
+          onClick={onOpenGuide}
+          className="hidden h-9 px-2 text-[13px] text-ink-soft hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink sm:inline-flex sm:items-center"
+        >
+          How it works
+        </button>
 
         <div className="ml-auto flex items-center gap-2">
           {session ? (
@@ -40,7 +71,7 @@ export default function Navbar({ session, onOpenAuth, onOpenReport, onLogout }) 
           <button
             type="button"
             onClick={onOpenReport}
-            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-ink px-3 text-sm font-medium text-white hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+            className="inline-flex h-9 items-center gap-1.5 rounded-md bg-accent px-3 text-sm font-medium text-black hover:bg-[#d6c9b2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             <Plus size={15} aria-hidden="true" />
             Report Item

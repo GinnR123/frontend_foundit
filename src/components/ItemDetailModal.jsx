@@ -45,7 +45,7 @@ export default function ItemDetailModal({ item, session, onClose, onResolved, on
 
   return (
     <Modal title="Item Details" onClose={onClose}>
-      <div className="px-5 py-4">
+      <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 [scrollbar-width:thin]">
         <div className="flex items-center gap-2">
           <StatusBadge type={item.type} status={item.status} />
           {item.matched_item_id != null && (
@@ -126,7 +126,7 @@ export default function ItemDetailModal({ item, session, onClose, onResolved, on
             type="button"
             onClick={handleResolve}
             disabled={resolving}
-            className="mt-4 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-md bg-ink px-3 text-sm font-medium text-white hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-not-allowed disabled:opacity-60"
+            className="mt-4 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-md bg-accent px-3 text-sm font-medium text-black hover:bg-[#d6c9b2] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60"
           >
             <CheckCircle2 size={15} aria-hidden="true" />
             {resolving ? 'Marking resolved…' : 'Mark Resolved'}

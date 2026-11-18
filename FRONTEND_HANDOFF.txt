@@ -1,0 +1,80 @@
+FOUNDIT FRONTEND HANDOFF
+For: Member 2 (Backend & MySQL Lead)
+
+1. PROJECT OVERVIEW & FRONTEND REPO
+
+- FoundIt is a general community Lost & Found web app. The frontend has a public Lost/Found feed, search and category filters, a Leaflet map, report submission, item details, and simulated sign-in.
+- Visual direction: restrained monochrome editorial interface with warm/neutral surfaces and distinct Lost/Found status colors.
+- Frontend repository: https://github.com/GinnR123/frontend_foundit
+- Local setup: npm install, then npm run dev. Vite serves the app at http://localhost:5173.
+- The frontend is React + Vite. src/services/api.js currently implements mock operations in localStorage. Treat it as the source for current behavior and JSON item shape; it must be adapted to call the backend when the API is ready.
+- Authentication in the current frontend is demo-only email lookup. It is not production authentication and must not be copied as a backend security design.
+- Geocoding is currently performed in the browser through a user-triggered Nominatim lookup. It is not an endpoint the frontend currently calls. Do not add geocoding routes unless agreed with the frontend lead.
+
+2. BACKEND TECH STACK & REQUIRED EXPRESS MIDDLEWARE
+
+- Build a Node.js + Express + MySQL backend using database name foundit_db.
+- Enable CORS for http://localhost:5173. If using cookie sessions, configure credentials and matching frontend fetch settings; do not use wildcard origins with credentials.
+- Use express.json() for JSON request bodies.
+- Validate request bodies, route parameters, enums, required fields, and coordinates before database writes.
+- Add centralized JSON error handling. Return { "error": "message" } with appropriate HTTP statuses, including 400 for invalid input, 401/403 for authentication/authorization failures, 404 for missing records, 409 for conflicts, and 500 for unexpected server errors. Avoid exposing stack traces or secrets.
+- Use parameterized SQL queries. Store credentials only as strong password hashes if password auth is selected. Never accept email-only login as proof of identity; use verified password auth or a verified magic-link/OTP flow.
+- Protect resolve operations and contact details server-side. Frontend visibility checks are not access control.
+
+3. MYSQL SCHEMA (schema.sql)
+
+Create a users table with:
+- id INT AUTO_INCREMENT PRIMARY KEY
+- full_name VARCHAR(120) NOT NULL
+- email VARCHAR(255) NOT NULL UNIQUE
+- password_hash VARCHAR(255) NULL (NULL only if using a verified passwordless flow)
+- role ENUM('user', 'admin') NOT NULL DEFAULT 'user'
+- created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+
+Create an items table with exactly these 14 JSON-facing snake_case fields:
+- id INT AUTO_INCREMENT PRIMARY KEY
+- user_id INT NULL (foreign key to users.id; anonymous reports are allowed)
+- full_name VARCHAR(120) NOT NULL
+- contact_info VARCHAR(255) NOT NULL
+- type ENUM('LOST', 'FOUND') NOT NULL
+- title VARCHAR(200) NOT NULL
+- description TEXT NOT NULL
+- category VARCHAR(50) NOT NULL; allowed values: Wallet / Bag, ID / Document, Gadget, Keys, Pet, Other
+- location_name VARCHAR(255) NOT NULL
+- latitude DOUBLE NULL
+- longitude DOUBLE NULL
+- status ENUM('OPEN', 'RESOLVED') NOT NULL DEFAULT 'OPEN'
+- matched_item_id INT NULL (self-reference to items.id)
+- created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+
+Add useful indexes for created_at, type/status, category, and user_id. Seed a few generic community reports with latitude and longitude NULL; retain the demo reciprocal possible match between item 1 and item 4 if using those seed IDs. Return coordinate values as JavaScript numbers or null in JSON.
+
+4. REQUIRED API ENDPOINTS & FRONTEND COMPATIBILITY
+
+All item responses must use these exact 14 keys: id, user_id, full_name, contact_info, type, title, description, category, location_name, latitude, longitude, status, matched_item_id, created_at. Serialize created_at as an ISO-8601 string. Do not include password hashes in any response.
+
+- GET /api/items
+  Return a JSON array ordered by created_at DESC. Keep the public response compatible with the 14-field item object. Do not expose private contact_info publicly unless the product/frontend contract is updated to authorize and request it separately.
+- POST /api/items
+  Required: type, title, description, category, location_name, contact_info. latitude and longitude are optional and should be null when omitted; validate latitude -90..90 and longitude -180..180. For anonymous reports, use user_id null and full_name "Community Member" as server defaults. The current mock instead uses user_id 0 and full_name "Anonymous" when signed out, so coordinate this contract change with the frontend lead. Return HTTP 201 and the created item object.
+- PATCH /api/items/:id/resolve
+  Require an authenticated owner or admin. Change status to RESOLVED and return the updated item object. Return 404 if missing and 409 if already resolved.
+- POST /api/auth/register
+  Current UI sends full_name and email only. This is not safe as real authentication. Agree with the frontend lead on a secure verified passwordless or password-based flow before implementation. Return a safe user object shaped { id, full_name, email, role } plus the agreed session/token mechanism; never return password_hash.
+- POST /api/auth/login
+  Current UI sends email only for demo lookup. Do not create a real session from email alone. Use the agreed secure auth flow and return the same safe user shape plus session/token mechanism.
+- GET /api/items/:id/matches
+  Current mock returns [] unless matched_item_id is set; otherwise it returns the referenced item as an array element with match_reason added. Preserve that response shape for the seeded 1 <-> 4 pair. Any new suggestion algorithm should return open, opposite-type candidates and must be coordinated with the frontend lead.
+- POST /api/ai/analyze
+  Request: { "description": "...", "type": "LOST" | "FOUND" }.
+  Response: { "suggested_title": "...", "suggested_category": "...", "suggested_location": "...", "is_demo": true }.
+  A keyword-based stub is acceptable initially; return category values from the allowed list.
+- Validation and operational errors should use { "error": "message" } so the frontend can display useful failures.
+
+5. FILES TO INCLUDE IN foundit-backend BEFORE PUSHING
+
+- schema.sql with the users/items tables, constraints, indexes, and a few generic seed reports.
+- .env.example with PORT=5000, DB_HOST=localhost, DB_USER=, DB_PASSWORD=, DB_NAME=foundit_db, CLIENT_URL=http://localhost:5173, and any auth/session secret variable names (no real secrets).
+- CLAUDE.md documenting backend folder structure, setup/run instructions, endpoint contracts, security expectations, and the exact 14-field item response schema.
+- Include a README with installation, environment setup, schema initialization, and local run instructions.
+- Before pushing, verify migrations/schema setup and exercise each route, including validation failures, anonymous report creation, auth failures, owner/admin resolution permissions, match pair retrieval, and AI stub response.

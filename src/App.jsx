@@ -6,6 +6,8 @@ import ItemMap from './components/ItemMap'
 import ItemDetailModal from './components/ItemDetailModal'
 import ReportModal from './components/ReportModal'
 import AuthModal from './components/AuthModal'
+import Finder from './components/Finder'
+import HowItWorksModal from './components/HowItWorksModal'
 import { getItems, getSession, logoutUser } from './services/api'
 
 const STATUS_TABS = ['All', 'Lost', 'Found']
@@ -19,6 +21,7 @@ export default function App() {
   const [selectedItemId, setSelectedItemId] = useState(null)
   const [focusItemId, setFocusItemId] = useState(null)
   const [openModal, setOpenModal] = useState(null) // 'auth' | 'report' | null
+  const [view, setView] = useState('feed') // 'feed' | 'finder'
   const [loadError, setLoadError] = useState(null)
 
   useEffect(() => {
@@ -85,15 +88,22 @@ export default function App() {
     <div className="flex min-h-screen flex-col">
       <Navbar
         session={session}
+        view={view}
+        onNavigate={setView}
         onOpenAuth={() => setOpenModal('auth')}
         onOpenReport={() => setOpenModal('report')}
+        onOpenGuide={() => setOpenModal('guide')}
         onLogout={handleLogout}
       />
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-4">
+        {view === 'finder' ? (
+          <Finder items={items} onSelectItem={handleSelectItem} />
+        ) : (
+        <>
         <div className="mb-5 border-b border-line-strong pb-3">
           <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-ink-soft">Community notices</p>
-          <h1 className="mt-1 text-2xl font-semibold leading-tight text-ink sm:text-[30px]">Lost &amp; Found</h1>
+          <h1 className="mt-1 text-2xl font-semibold leading-tight text-ink sm:text-[32px]">Lost &amp; Found</h1>
         </div>
         {loadError && (
           <p className="mb-3 rounded-md border border-lost bg-lost-bg px-3 py-2 text-[13px] text-lost" role="alert">
@@ -136,16 +146,21 @@ export default function App() {
           </div>
 
           <div className="lg:sticky lg:top-[72px] lg:h-[calc(100vh-88px)]">
-            <div className="h-72 overflow-hidden rounded-lg border border-line lg:h-full">
+            <div className="relative h-72 overflow-hidden rounded-lg border border-line lg:h-full">
               <ItemMap
                 items={filtered}
                 focusItemId={focusItemId}
                 onFocusHandled={clearFocus}
                 onSelectItem={(id) => setSelectedItemId(id)}
               />
+              <div className="pointer-events-none absolute bottom-3 left-3 border border-line bg-surface/95 px-2 py-1 font-mono text-[10px] uppercase tracking-wide text-ink-soft">
+                Map view · Select a report to focus location
+              </div>
             </div>
           </div>
         </div>
+        </>
+        )}
       </main>
 
       <footer className="border-t border-line bg-surface py-3">
@@ -160,6 +175,13 @@ export default function App() {
       )}
       {openModal === 'report' && (
         <ReportModal onClose={() => setOpenModal(null)} onCreated={handleCreated} />
+      )}
+      {openModal === 'guide' && (
+        <HowItWorksModal
+          onClose={() => setOpenModal(null)}
+          onGoFinder={() => { setOpenModal(null); setView('finder') }}
+          onReport={() => setOpenModal('report')}
+        />
       )}
       {selectedItem && (
         <ItemDetailModal
